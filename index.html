@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eaf0df">
+  <meta name="application-name" content="حديقتي">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="حديقتي">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <meta name="description" content="حديقتي — عالم هادئ للتجول والتعلم وتسجيل الأعمال الشخصية والاحتفاظ بتقدم الحديقة.">
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <title>حديقتي | مساحة تنمو معك</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <img src="./assets/logo.svg" alt="شعار حديقتي" class="brand-logo">
+        <div class="brand-copy"><strong>حديقتي</strong><span>مساحة هادئة تنمو معك</span></div>
+      </div>
+      <div class="topbar-center">
+        <span class="status-pill"><i class="status-dot"></i><span id="save-status">جارٍ تجهيز الحديقة</span></span>
+        <span class="status-pill status-muted" id="connection-status">وضع محلي</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-button" id="install-button" type="button" aria-label="تثبيت التطبيق" title="تثبيت التطبيق" hidden>⇩</button>
+        <button class="profile-chip" id="profile-button" type="button" aria-label="إعدادات الملف الشخصي">
+          <span class="avatar">✿</span><span id="profile-name">صديق الحديقة</span><span class="chevron">⌄</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <section class="world-shell" aria-label="عالم الحديقة">
+        <canvas id="garden-canvas" aria-label="خريطة حديقة تفاعلية. استخدم الأسهم أو WASD للتحرك، ومفتاح E للتفاعل." tabindex="0"></canvas>
+        <div class="world-top-left">
+          <div class="mini-card greeting-card">
+            <span class="eyebrow">أهلاً بك في</span><strong>حديقتك</strong><small>تجوّل على راحتك، واحفظ تقدمك خطوة بخطوة.</small>
+          </div>
+        </div>
+        <div class="world-top-right">
+          <button class="world-tool" data-open="map" type="button"><span>⌖</span> الخريطة</button>
+          <button class="world-tool" data-open="help" type="button"><span>؟</span> المساعدة</button>
+        </div>
+        <aside class="world-side-card" id="nearby-card">
+          <div class="side-card-head"><span class="tiny-leaf">✦</span><span>قريب منك</span></div>
+          <strong id="nearby-title">الساحة الرئيسية</strong>
+          <p id="nearby-description">اقترب من أي مرفق واضغط تفاعل لفتح تفاصيله.</p>
+          <button class="text-button" id="nearby-action" type="button">تفاصيل المكان <span>←</span></button>
+        </aside>
+        <div class="world-bottom-left">
+          <div class="movement-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>أو الأسهم للتحرك</span><kbd>E</kbd><span>للتفاعل</span></div>
+          <div class="joystick" id="joystick" aria-label="عصا التحكم للمس">
+            <div class="joystick-base"><div class="joystick-knob" id="joystick-knob"></div></div>
+          </div>
+        </div>
+        <button class="interact-button" id="interact-button" type="button"><span>✧</span> تفاعل</button>
+        <div class="build-banner" id="build-banner" hidden>
+          <span id="build-banner-text">وضع البناء: اختر مكاناً مناسباً في الحديقة</span>
+          <button id="cancel-build" type="button">إلغاء</button>
+        </div>
+        <nav class="dock" aria-label="القائمة الرئيسية">
+          <button class="dock-item active" data-open="garden" type="button"><span class="dock-icon">⌂</span><span>الحديقة</span></button>
+          <button class="dock-item" data-open="tasks" type="button"><span class="dock-icon">✓</span><span>المهام</span></button>
+          <button class="dock-item" data-open="library" type="button"><span class="dock-icon">▤</span><span>المكتبة</span></button>
+          <button class="dock-item" data-open="inventory" type="button"><span class="dock-icon">♧</span><span>المخزون</span></button>
+          <button class="dock-item" data-open="achievements" type="button"><span class="dock-icon">✧</span><span>الإنجازات</span></button>
+          <button class="dock-item dock-settings" data-open="settings" type="button"><span class="dock-icon">⚙</span><span>الإعدادات</span></button>
+        </nav>
+      </section>
+      <aside class="right-rail">
+        <section class="rail-card profile-summary">
+          <div class="summary-top"><div><span class="eyebrow">ملخص الحديقة</span><h2 id="summary-garden-name">حديقتي</h2></div><div class="summary-mark">✿</div></div>
+          <div class="summary-stats">
+            <div><strong id="stat-zones">1</strong><span>مناطق زرتها</span></div>
+            <div><strong id="stat-objects">0</strong><span>عناصر وضعتها</span></div>
+            <div><strong id="stat-tasks">0</strong><span>أعمال مسجلة</span></div>
+          </div>
+        </section>
+        <section class="rail-card task-highlight">
+          <div class="rail-title"><span class="title-icon">✦</span><h3>خطوتك التالية</h3></div>
+          <div id="next-step-card"></div>
+        </section>
+        <section class="rail-card tip-card">
+          <span class="tip-sprout">❧</span><div><strong>على مهل</strong><p>الحديقة مساحة للتذكير والتنظيم، وليست مقياساً للإيمان أو قبول العمل.</p></div>
+        </section>
+        <button class="rail-link" data-open="backup" type="button"><span>⇧</span> النسخ الاحتياطي والاستعادة</button>
+      </aside>
+    </main>
+  </div>
+
+  <div class="dialog-backdrop" id="dialog-backdrop" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+      <header class="dialog-header"><div><span class="eyebrow" id="dialog-eyebrow">حديقتي</span><h2 id="dialog-title">العنوان</h2></div><button class="close-button" id="dialog-close" type="button" aria-label="إغلاق">×</button></header>
+      <div class="dialog-body" id="dialog-body"></div>
+    </section>
+  </div>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <input type="file" id="backup-file" accept="application/json,.json" hidden>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

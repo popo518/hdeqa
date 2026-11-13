@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">شعار حديقتي</title><desc id="desc">بوابة حديقة يخرج منها غصن أخضر</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5f2df"/><stop offset="1" stop-color="#dce9d1"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8eae77"/><stop offset="1" stop-color="#507b58"/></linearGradient>
+  </defs>
+  <circle cx="80" cy="80" r="75" fill="url(#bg)" stroke="#fffdf3" stroke-width="5"/>
+  <path d="M37 121V76c0-26 19-45 43-45s43 19 43 45v45" fill="none" stroke="#9a805c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M50 121V78c0-18 13-32 30-32s30 14 30 32v43" fill="#f9f5e6" stroke="#c8b48b" stroke-width="3"/>
+  <path d="M80 112V69" stroke="#547c58" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 86C51 83 48 63 57 55c15-2 25 10 22 31Z" fill="url(#leaf)"/>
+  <path d="M81 75c3-24 22-31 32-22 2 15-10 25-32 22Z" fill="#739b68"/>
+  <path d="M80 97c-1-16-18-23-26-15 0 12 10 18 26 15Z" fill="#a6bd85"/>
+  <path d="M55 121h50" stroke="#8a724e" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="80" cy="21" r="5" fill="#c6a369"/><path d="M80 10v-5m0 32v-5m-16-11h-5m42 0h-5" stroke="#c6a369" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
