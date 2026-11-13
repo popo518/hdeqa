@@ -3,276 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#b9d8b2" />
-  <meta name="description" content="حديقتك الهادئة: استكشف الطبيعة، أنجز مهام الذكر، وابنِ مساحتك الخاصة." />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" />
-  <title>حديقتي | مساحة هادئة</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #264438;
-      --muted: #6e8577;
-      --green: #4d805f;
-      --green-dark: #315b42;
-      --cream: rgba(250, 249, 239, .94);
-      --line: rgba(61, 91, 68, .15);
-      --shadow: 0 14px 38px rgba(33, 64, 45, .16);
+  <meta name="theme-color" content="#e7f0df" />
+  <meta name="description" content="MY GARDEN — عالمك الطبيعي الذي ينمو معك." />
+  <title>MY GARDEN | حديقتي</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+        "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js"
+      }
     }
-
-    * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-    body {
-      background: #b8d4a5;
-      color: var(--ink);
-      font-family: Tahoma, Arial, sans-serif;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    button { font: inherit; }
-    #world { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
-
-    .toolbar {
-      position: fixed;
-      z-index: 20;
-      top: max(14px, env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 9px;
-      padding: 7px;
-      border: 1px solid rgba(255,255,255,.56);
-      border-radius: 22px;
-      background: rgba(250, 249, 239, .76);
-      box-shadow: 0 8px 24px rgba(38, 68, 56, .12);
-      backdrop-filter: blur(14px);
-    }
-    .tool-button {
-      min-width: 48px;
-      height: 46px;
-      padding: 0 14px;
-      border: 0;
-      border-radius: 15px;
-      color: var(--green-dark);
-      background: transparent;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      font-size: 14px;
-      font-weight: 700;
-      transition: background .18s, transform .18s;
-    }
-    .tool-button .glyph { font-size: 21px; line-height: 1; }
-    .tool-button:hover, .tool-button.active { background: #e2ecd9; }
-    .tool-button:active { transform: scale(.96); }
-    .tool-button:focus-visible, .action-button:focus-visible, .quality-button:focus-visible, .task-button:focus-visible, .build-item:focus-visible {
-      outline: 3px solid #d08c4a;
-      outline-offset: 3px;
-    }
-
-    .hint {
-      position: fixed;
-      z-index: 10;
-      bottom: max(17px, env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 9px 15px;
-      border: 1px solid rgba(255,255,255,.45);
-      border-radius: 999px;
-      color: #f8fff3;
-      background: rgba(38, 68, 56, .34);
-      backdrop-filter: blur(9px);
-      text-shadow: 0 1px 3px rgba(0,0,0,.3);
-      font-size: 12px;
-      white-space: nowrap;
-      pointer-events: none;
-      transition: opacity .25s;
-    }
-    .hint.hidden { opacity: 0; }
-
-    .panel-backdrop {
-      position: fixed;
-      z-index: 30;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: rgba(24, 46, 34, .2);
-      backdrop-filter: blur(5px);
-    }
-    .panel-backdrop.open { display: flex; }
-    .panel {
-      width: min(480px, 100%);
-      max-height: min(82vh, 720px);
-      overflow: auto;
-      padding: 22px;
-      border: 1px solid rgba(255,255,255,.8);
-      border-radius: 26px;
-      background: var(--cream);
-      box-shadow: var(--shadow);
-      animation: panel-in .2s ease-out;
-    }
-    @keyframes panel-in { from { opacity: 0; transform: translateY(9px) scale(.985); } to { opacity: 1; transform: none; } }
-    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
-    .panel-title { margin: 0; color: var(--green-dark); font-size: 21px; font-weight: 800; }
-    .close-button {
-      width: 38px; height: 38px; border: 0; border-radius: 13px;
-      background: #e8eee2; color: #48634f; font-size: 21px; cursor: pointer;
-    }
-    .panel-description { margin: 0 0 17px; color: var(--muted); font-size: 13px; line-height: 1.8; }
-    .section-label { display: block; margin: 18px 0 10px; color: #526e59; font-size: 13px; font-weight: 800; }
-
-    .quality-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .quality-button {
-      min-height: 43px; border: 1px solid var(--line); border-radius: 13px;
-      background: #f5f5eb; color: #49634f; cursor: pointer; font-size: 13px; font-weight: 700;
-    }
-    .quality-button.selected { color: white; border-color: var(--green); background: var(--green); box-shadow: 0 4px 12px rgba(77,128,95,.2); }
-    .setting-note { margin: 13px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
-
-    .task-list, .build-grid { display: grid; gap: 11px; }
-    .task-card {
-      padding: 14px; border: 1px solid var(--line); border-radius: 17px;
-      background: rgba(255,255,255,.65);
-    }
-    .task-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    .task-name { margin: 0 0 5px; color: #2e513b; font-size: 15px; font-weight: 800; }
-    .task-meta { color: var(--muted); font-size: 11px; line-height: 1.7; }
-    .task-reward { flex: 0 0 auto; padding: 6px 9px; border-radius: 999px; color: #7b5b23; background: #f5e9c9; font-size: 11px; font-weight: 700; }
-    .task-progress { height: 7px; margin: 12px 0 10px; overflow: hidden; border-radius: 99px; background: #e4e9df; }
-    .task-progress > span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #8bb66d, #4e8b62); transition: width .2s; }
-    .task-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-    .task-count { color: #56715d; font-size: 12px; font-weight: 700; }
-    .task-button, .action-button {
-      min-height: 39px; padding: 0 14px; border: 0; border-radius: 12px;
-      color: white; background: var(--green); cursor: pointer; font-size: 12px; font-weight: 800;
-    }
-    .task-button:disabled { cursor: default; background: #a7b5a5; }
-    .notice { margin-top: 14px; padding: 11px 13px; border-radius: 13px; color: #6e603f; background: #f5efd9; font-size: 11px; line-height: 1.8; }
-
-    .seed-wallet { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 12px 14px; border-radius: 15px; background: #eaf0df; color: #4b684e; font-size: 13px; font-weight: 800; }
-    .build-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .build-item {
-      min-height: 88px; padding: 12px; border: 1px solid var(--line); border-radius: 17px;
-      background: rgba(255,255,255,.68); color: #385a42; cursor: pointer; text-align: right;
-      display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px;
-    }
-    .build-item.selected { border-color: #75a57b; background: #e7f0df; box-shadow: inset 0 0 0 1px #75a57b; }
-    .build-icon { font-size: 23px; }
-    .build-name { font-size: 13px; font-weight: 800; }
-    .build-cost { color: var(--muted); font-size: 11px; }
-    .build-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
-    .action-button.secondary { color: #4d6954; background: #e7eee2; }
-    .action-button.danger { background: #a85f4c; }
-
-    .build-prompt {
-      position: fixed; z-index: 15; bottom: max(68px, calc(env(safe-area-inset-bottom) + 55px)); left: 50%; transform: translateX(-50%);
-      display: none; max-width: calc(100vw - 28px); padding: 10px 14px; border-radius: 15px;
-      color: #fff; background: rgba(42, 78, 52, .88); box-shadow: 0 6px 22px rgba(25,51,34,.2);
-      font-size: 12px; white-space: nowrap;
-    }
-    .build-prompt.show { display: block; }
-
-    .toast {
-      position: fixed; z-index: 60; top: max(78px, calc(env(safe-area-inset-top) + 70px)); left: 50%;
-      transform: translate(-50%, -8px); opacity: 0; pointer-events: none;
-      padding: 11px 16px; border: 1px solid rgba(255,255,255,.55); border-radius: 14px;
-      color: white; background: rgba(48, 92, 61, .92); box-shadow: 0 8px 24px rgba(31,64,43,.2);
-      font-size: 13px; transition: opacity .2s, transform .2s;
-    }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-    .joystick {
-      position: fixed; z-index: 12; bottom: max(24px, env(safe-area-inset-bottom)); left: 22px;
-      width: 116px; height: 116px; border: 1px solid rgba(255,255,255,.42); border-radius: 50%;
-      background: rgba(250,249,239,.25); backdrop-filter: blur(5px); display: none; touch-action: none;
-    }
-    .joystick-knob {
-      position: absolute; width: 48px; height: 48px; left: 34px; top: 34px; border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.7); background: rgba(250,249,239,.72); box-shadow: 0 3px 12px rgba(30,60,40,.18);
-    }
-
-    @media (pointer: coarse) {
-      .joystick { display: block; }
-      .hint { bottom: max(150px, calc(env(safe-area-inset-bottom) + 135px)); font-size: 10px; }
-    }
-    @media (max-width: 520px) {
-      .toolbar { gap: 3px; padding: 5px; }
-      .tool-button { min-width: 43px; height: 43px; padding: 0 9px; font-size: 12px; }
-      .tool-button .word { display: none; }
-      .panel { padding: 18px; border-radius: 22px; }
-      .quality-options { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
-    }
-  </style>
+  </script>
 </head>
 <body>
-  <canvas id="world" aria-label="مشهد الحديقة ثلاثي الأبعاد"></canvas>
+  <main id="app">
+    <canvas id="world" aria-label="عالم الحديقة ثلاثي الأبعاد"></canvas>
 
-  <nav class="toolbar" aria-label="أدوات الحديقة">
-    <button id="settingsToggle" class="tool-button" type="button" aria-label="الإعدادات" title="الإعدادات"><span class="glyph">⚙</span><span class="word">الإعدادات</span></button>
-    <button id="tasksToggle" class="tool-button" type="button" aria-label="المهام" title="المهام"><span class="glyph">☼</span><span class="word">المهام</span></button>
-    <button id="buildToggle" class="tool-button" type="button" aria-label="البناء" title="البناء"><span class="glyph">🌱</span><span class="word">البناء</span></button>
-  </nav>
-
-  <div id="settingsBackdrop" class="panel-backdrop" role="presentation">
-    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <div class="panel-head"><h2 id="settingsTitle" class="panel-title">إعدادات العرض</h2><button class="close-button" data-close="settingsBackdrop" type="button" aria-label="إغلاق">×</button></div>
-      <p class="panel-description">اختر المظهر المناسب لجهازك. الوضع التلقائي يوازن الجودة مع سلاسة الحركة.</p>
-      <span class="section-label">جودة الرسومات</span>
-      <div id="qualityOptions" class="quality-options">
-        <button class="quality-button" data-quality="auto" type="button">تلقائي</button>
-        <button class="quality-button" data-quality="low" type="button">منخفضة</button>
-        <button class="quality-button" data-quality="medium" type="button">متوسطة</button>
-        <button class="quality-button" data-quality="high" type="button">عالية</button>
-        <button class="quality-button" data-quality="ultra" type="button">فائقة</button>
+    <header class="topbar">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">✿</span>
+        <div>
+          <div class="brand-name">MY GARDEN</div>
+          <div class="brand-subtitle">حديقتك، على مهل</div>
+        </div>
       </div>
-      <p id="qualityNote" class="setting-note">الوضع التلقائي يختار مستوى مناسبًا لقدرات جهازك ويراقب الأداء أثناء اللعب.</p>
-    </section>
-  </div>
-
-  <div id="tasksBackdrop" class="panel-backdrop" role="presentation">
-    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle">
-      <div class="panel-head"><h2 id="tasksTitle" class="panel-title">مهام اليوم</h2><button class="close-button" data-close="tasksBackdrop" type="button" aria-label="إغلاق">×</button></div>
-      <p class="panel-description">مهمة واحدة بسيطة لليوم. قل الذكر بنفسك ثم سجّل تكرارك لتحصل على بذور رمزية تستخدمها في بناء حديقتك.</p>
-      <div id="taskList" class="task-list"></div>
-      <div class="notice">البذور مكافأة داخل اللعبة فقط، وليست أجراً دينياً أو حساباً للحسنات. الثواب الحقيقي عند الله؛ التطبيق يعتمد على تسجيلك الذاتي ولا يستطيع التحقق من الذكر.</div>
-    </section>
-  </div>
-
-  <div id="buildBackdrop" class="panel-backdrop" role="presentation">
-    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="buildTitle">
-      <div class="panel-head"><h2 id="buildTitle" class="panel-title">مساحة البناء</h2><button class="close-button" data-close="buildBackdrop" type="button" aria-label="إغلاق">×</button></div>
-      <div class="seed-wallet"><span>🌰 بذور البناء</span><strong id="seedBalance">0</strong></div>
-      <p class="panel-description">اختر العنصر ثم اضغط على أي مساحة خضراء مناسبة في الحديقة لوضعه. يمكنك تدويره أو تحديده وحذفه لاحقاً.</p>
-      <div class="build-grid">
-        <button class="build-item" data-build="flower" type="button"><span class="build-icon">🌼</span><span class="build-name">زهرة</span><span class="build-cost">بذرة واحدة</span></button>
-        <button class="build-item" data-build="bush" type="button"><span class="build-icon">🌿</span><span class="build-name">شجيرة</span><span class="build-cost">بذرتان</span></button>
-        <button class="build-item" data-build="tree" type="button"><span class="build-icon">🌳</span><span class="build-name">شجرة</span><span class="build-cost">3 بذور</span></button>
-        <button class="build-item" data-build="bench" type="button"><span class="build-icon">🪑</span><span class="build-name">مقعد خشبي</span><span class="build-cost">4 بذور</span></button>
-        <button class="build-item" data-build="lantern" type="button"><span class="build-icon">🏮</span><span class="build-name">فانوس</span><span class="build-cost">3 بذور</span></button>
-        <button class="build-item" data-build="fountain" type="button"><span class="build-icon">⛲</span><span class="build-name">نافورة</span><span class="build-cost">8 بذور</span></button>
-        <button class="build-item" data-build="arch" type="button"><span class="build-icon">🌱</span><span class="build-name">قوس نباتي</span><span class="build-cost">10 بذور</span></button>
-        <button class="build-item" data-build="rock" type="button"><span class="build-icon">🪨</span><span class="build-name">صخرة زينة</span><span class="build-cost">بذرتان</span></button>
+      <div class="top-actions">
+        <span id="save-status" class="save-status"><i></i> محفوظ</span>
+        <button id="settings-button" class="glass-button" type="button">الإعدادات</button>
       </div>
-      <div class="build-actions">
-        <button id="rotateBuild" class="action-button secondary" type="button">تدوير 45°</button>
-        <button id="deleteBuild" class="action-button danger" type="button" disabled>حذف المحدد</button>
-        <button id="cancelBuild" class="action-button secondary" type="button">إلغاء الوضع</button>
+    </header>
+
+    <div class="world-hint" id="world-hint">تحرّك بحرية واستكشف المكان</div>
+
+    <div class="bottom-dock" id="bottom-dock">
+      <button class="dock-button" id="tasks-button" type="button">
+        <span class="dock-symbol">☀</span><span>المهام</span><b id="task-count">0</b>
+      </button>
+      <button class="dock-button dock-primary" id="build-button" type="button">
+        <span class="dock-symbol">＋</span><span>البناء</span>
+      </button>
+      <button class="dock-button" id="journal-button" type="button">
+        <span class="dock-symbol">⌑</span><span>السجل</span>
+      </button>
+    </div>
+
+    <div id="joystick" class="joystick" aria-label="عصا الحركة">
+      <span class="joystick-knob"></span>
+    </div>
+
+    <div id="build-bar" class="build-bar hidden">
+      <div class="build-bar-copy"><strong id="build-item-name">وضع البناء</strong><small id="build-hint">اضغط على الأرض لاختيار المكان</small></div>
+      <button id="rotate-build" class="small-action" type="button" aria-label="تدوير">↻ تدوير</button>
+      <button id="confirm-build" class="confirm-action" type="button" disabled>تثبيت هنا</button>
+      <button id="cancel-build" class="small-action quiet-action" type="button">إلغاء</button>
+    </div>
+
+    <section id="sheet" class="sheet hidden" aria-modal="true" role="dialog" aria-labelledby="sheet-title">
+      <div class="sheet-grip"></div>
+      <div class="sheet-header">
+        <div>
+          <p class="eyebrow" id="sheet-kicker">حديقتك</p>
+          <h1 id="sheet-title">المهام اليومية</h1>
+        </div>
+        <button id="close-sheet" class="close-button" type="button" aria-label="إغلاق">×</button>
       </div>
+      <div id="sheet-content" class="sheet-content"></div>
     </section>
-  </div>
 
-  <div id="buildPrompt" class="build-prompt" aria-live="polite"></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <div id="hint" class="hint">W A S D للحركة · اسحب لتدوير الكاميرا · عجلة الفأرة للتقريب والإبعاد</div>
-  <div id="joystick" class="joystick" aria-label="عصا الحركة"><div id="joystickKnob" class="joystick-knob"></div></div>
-  
-
-  <script type="module" src="./src/scene.js"></script>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="loading" class="loading-screen">
+      <div class="loading-flower">✿</div>
+      <div class="loading-title">MY GARDEN</div>
+      <div class="loading-text">نجهّز حديقتك...</div>
+      <div class="loading-track"><span></span></div>
+    </div>
+    <div id="fatal-error" class="fatal-error hidden"></div>
+    <input id="restore-file" type="file" accept="application/json,.json" hidden />
+  </main>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

@@ -1,18 +1,11 @@
 {
-  "name": "my-garden-world",
+  "name": "my-garden-mvp",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test"
+    "check": "node --check src/main.js && node --check src/world.js && node --check src/data.js && node --check src/storage.js && node --check src/terrain.js && node --check src/ledger.js && node --check sw.js && node tests/core.test.mjs"
   },
-  "dependencies": {
-    "three": "^0.180.0"
-  },
-  "devDependencies": {
-    "vite": "^7.2.2"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
