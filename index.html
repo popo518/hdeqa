@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#b9d8b2" />
   <meta name="description" content="حديقتك الهادئة: استكشف الطبيعة، أنجز مهام الذكر، وابنِ مساحتك الخاصة." />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" />
   <title>حديقتي | مساحة هادئة</title>
   <style>
     :root {
@@ -193,12 +193,10 @@
       position: absolute; width: 48px; height: 48px; left: 34px; top: 34px; border-radius: 50%;
       border: 1px solid rgba(255,255,255,.7); background: rgba(250,249,239,.72); box-shadow: 0 3px 12px rgba(30,60,40,.18);
     }
-    .mobile-hint { position: fixed; z-index: 11; right: 20px; bottom: max(35px, env(safe-area-inset-bottom)); color: rgba(255,255,255,.9); font-size: 11px; text-shadow: 0 1px 4px rgba(0,0,0,.3); display: none; }
 
     @media (pointer: coarse) {
       .joystick { display: block; }
       .hint { bottom: max(150px, calc(env(safe-area-inset-bottom) + 135px)); font-size: 10px; }
-      .mobile-hint { display: block; }
     }
     @media (max-width: 520px) {
       .toolbar { gap: 3px; padding: 5px; }
@@ -240,9 +238,9 @@
   <div id="tasksBackdrop" class="panel-backdrop" role="presentation">
     <section class="panel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle">
       <div class="panel-head"><h2 id="tasksTitle" class="panel-title">مهام اليوم</h2><button class="close-button" data-close="tasksBackdrop" type="button" aria-label="إغلاق">×</button></div>
-      <p class="panel-description">سجّل الأذكار التي تقولها بنفسك. عند إكمال المهمة تحصل على بذور تستخدمها في بناء حديقتك.</p>
+      <p class="panel-description">مهمة واحدة بسيطة لليوم. قل الذكر بنفسك ثم سجّل تكرارك لتحصل على بذور رمزية تستخدمها في بناء حديقتك.</p>
       <div id="taskList" class="task-list"></div>
-      <div class="notice">البذور مكافأة تحفيزية داخل اللعبة وليست قياسًا للحسنات أو للأجر الحقيقي. الأجر عند الله، والتطبيق لا يتحقق من الذكر ولا يحتسبه عنك.</div>
+      <div class="notice">البذور مكافأة داخل اللعبة فقط، وليست أجراً دينياً أو حساباً للحسنات. الثواب الحقيقي عند الله؛ التطبيق يعتمد على تسجيلك الذاتي ولا يستطيع التحقق من الذكر.</div>
     </section>
   </div>
 
@@ -250,7 +248,7 @@
     <section class="panel" role="dialog" aria-modal="true" aria-labelledby="buildTitle">
       <div class="panel-head"><h2 id="buildTitle" class="panel-title">مساحة البناء</h2><button class="close-button" data-close="buildBackdrop" type="button" aria-label="إغلاق">×</button></div>
       <div class="seed-wallet"><span>🌰 بذور البناء</span><strong id="seedBalance">0</strong></div>
-      <p class="panel-description">اختر العنصر، ثم اضغط على أي مكان في الأرض لوضعه. تستطيع تدوير العنصر أو حذف ما بنيته.</p>
+      <p class="panel-description">اختر العنصر ثم اضغط على أي مساحة خضراء مناسبة في الحديقة لوضعه. يمكنك تدويره أو تحديده وحذفه لاحقاً.</p>
       <div class="build-grid">
         <button class="build-item" data-build="flower" type="button"><span class="build-icon">🌼</span><span class="build-name">زهرة</span><span class="build-cost">بذرة واحدة</span></button>
         <button class="build-item" data-build="bush" type="button"><span class="build-icon">🌿</span><span class="build-name">شجيرة</span><span class="build-cost">بذرتان</span></button>
@@ -271,10 +269,10 @@
 
   <div id="buildPrompt" class="build-prompt" aria-live="polite"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <div id="hint" class="hint">W A S D للحركة · اسحب بالفأرة لتدوير الكاميرا</div>
+  <div id="hint" class="hint">W A S D للحركة · اسحب لتدوير الكاميرا · عجلة الفأرة للتقريب والإبعاد</div>
   <div id="joystick" class="joystick" aria-label="عصا الحركة"><div id="joystickKnob" class="joystick-knob"></div></div>
-  <div class="mobile-hint">اسحب الشاشة لتدوير المنظور</div>
+  
 
-  <script type="module" src="/src/scene.js"></script>
+  <script type="module" src="./src/scene.js"></script>
 </body>
 </html>

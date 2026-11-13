@@ -1,7 +1,7 @@
 // Persistence boundary: only known, bounded values are accepted from localStorage.
 export const SAVE_VERSION = 2;
 export const SAVE_QUALITY_LEVELS = Object.freeze(['auto', 'low', 'medium', 'high', 'ultra']);
-export const SAVE_TASK_TARGETS = Object.freeze({ subhan: 100, istighfar: 33, salawat: 33 });
+export const SAVE_TASK_TARGETS = Object.freeze({ subhan: 100 });
 export const SAVE_BUILD_TYPES = Object.freeze(['flower', 'bush', 'tree', 'bench', 'lantern', 'fountain', 'arch', 'rock']);
 
 function boundedNumber(value, min, max, fallback) {

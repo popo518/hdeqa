@@ -9,7 +9,7 @@ function save(overrides = {}) {
     version: 2,
     quality: 'high',
     seeds: 12,
-    daily: { day: TODAY, tasks: { subhan: { count: 100, completed: true } } },
+    daily: { day: TODAY, tasks: { subhan: { count: 100, completed: true }, istighfar: { count: 33, completed: true } } },
     decorations: [{ type: 'tree', x: 10, z: -20, rotation: 1.2 }],
     ...overrides,
   });
@@ -35,7 +35,7 @@ test('seed balance and task progress are bounded to valid ranges', () => {
   assert.equal(parsed.seeds, 999999);
   assert.equal(parsed.daily.tasks.subhan.count, 100);
   assert.equal(parsed.daily.tasks.subhan.completed, true);
-  assert.equal(parsed.daily.tasks.istighfar.count, 0);
+  assert.equal(parsed.daily.tasks.istighfar, undefined);
 });
 
 test('unknown build types and out-of-world placements are discarded', () => {
@@ -65,4 +65,10 @@ test('serialized state can be parsed back without losing valid decorations', () 
   assert.equal(parsed.quality, 'medium');
   assert.equal(parsed.seeds, 7);
   assert.equal(parsed.decorations[0].type, 'bench');
+});
+
+test('legacy dhikr categories are discarded from the simplified daily task model', () => {
+  const parsed = parseGardenSave(save({ daily: { day: TODAY, tasks: { subhan: { count: 4 }, istighfar: { count: 33 }, salawat: { count: 33 } } } }), TODAY);
+  assert.deepEqual(Object.keys(parsed.daily.tasks), ['subhan']);
+  assert.equal(parsed.daily.tasks.subhan.count, 4);
 });

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { parseGardenSave, serializeGardenSave } from './save-data.js';
+import { isWalkablePosition } from './world-rules.js';
 
 // حديقتي — تجربة عالم مفتوح ثلاثية الأبعاد
 // لا توجد حسابات أو خادم: التقدم محفوظ محليًا على جهاز المستخدم فقط.
@@ -23,24 +24,8 @@ const TASKS = [
     title: 'سبحان الله وبحمده',
     target: 100,
     reward: 5,
-    detail: 'سجّل مرة بعد كل تكرار تقوله.',
+    detail: 'قل الذكر بنفسك، ثم اضغط «سجّلت تكرارًا» بعد كل مرة. عند إكمال 100 مرة تحصل على 5 بذور بناء.',
     reference: 'ورد فضل قولها مائة مرة في اليوم في صحيح البخاري (6405) وصحيح مسلم (2691).',
-  },
-  {
-    id: 'istighfar',
-    title: 'أستغفر الله',
-    target: 33,
-    reward: 2,
-    detail: 'استغفر الله بقلب حاضر، ثم سجّل التكرار.',
-    reference: 'عدد تنظيمي اختياري داخل التطبيق، وليس تحديدًا لثواب مخصوص.',
-  },
-  {
-    id: 'salawat',
-    title: 'اللهم صلِّ وسلم على نبينا محمد',
-    target: 33,
-    reward: 2,
-    detail: 'أكثر من الصلاة على النبي ﷺ، ثم سجّل التكرار.',
-    reference: 'عدد تنظيمي اختياري داخل التطبيق، وليس تحديدًا لثواب مخصوص.',
   },
 ];
 
@@ -48,7 +33,14 @@ const QUALITY = {
   low:    { label: 'منخفضة', dpr: 0.8,  shadows: false, shadowSize: 512,  trees: 72,  flowers: 280, wind: false, fireflies: false },
   medium: { label: 'متوسطة', dpr: 1.0,  shadows: false, shadowSize: 768,  trees: 105, flowers: 430, wind: false, fireflies: false },
   high:   { label: 'عالية',   dpr: 1.45, shadows: true,  shadowSize: 1024, trees: 135, flowers: 620, wind: false, fireflies: false },
-  ultra:  { label: 'فائقة',   dpr: 1.9,  shadows: true,  shadowSize: 2048, trees: 160, flowers: 820, wind: true,  fireflies: true },
+  ultra:  { label: 'فائقة',   dpr: 1.7,  shadows: true,  shadowSize: 2048, trees: 160, flowers: 820, wind: true,  fireflies: true },
+};
+
+const QUALITY_DETAILS = {
+  low: 'تفاصيل أقل ودقة رسم منخفضة، دون ظلال؛ لأجهزة أضعف.',
+  medium: 'ألوان طبيعية وتفاصيل متوازنة مع أداء أخف، دون ظلال.',
+  high: 'ظلال فعلية، وأشجار وزهور أكثر، وتفاصيل أوضح.',
+  ultra: 'ظلال عالية الدقة، ألوان أغنى، أشجار متحركة ويراعات صغيرة ومؤثرات إضافية.',
 };
 
 const ui = {
@@ -168,14 +160,19 @@ renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setClearColor(0xb9d8b2, 1);
 
+ui.canvas.addEventListener('webglcontextlost', (event) => {
+  event.preventDefault();
+  showToast('توقفت الرسومات مؤقتًا. حدّث الصفحة لإعادة تشغيل الحديقة.');
+});
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb9d8b2);
 scene.fog = new THREE.FogExp2(0xb9d8b2, 0.00215);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 900);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / Math.max(1, window.innerHeight), 0.1, 900);
 let cameraYaw = 0;
-let cameraPitch = 0.48;
-const cameraDistance = 10.8;
+let cameraPitch = 0.52;
+let cameraDistance = 12.4;
 const cameraTarget = new THREE.Vector3();
 
 const hemisphere = new THREE.HemisphereLight(0xe4f3ff, 0x557747, 1.4);
@@ -252,6 +249,7 @@ const riverPoints = [
 ];
 const riverCurve = new THREE.CatmullRomCurve3(riverPoints, false, 'catmullrom', 0.45);
 const riverSamples = riverCurve.getPoints(180);
+const bridgeCrossings = [];
 
 function riverDistance(x, z) {
   let nearest = Infinity;
@@ -332,6 +330,7 @@ function createBridge(t) {
   const point = riverCurve.getPointAt(t);
   const tangent = riverCurve.getTangentAt(t).normalize();
   const angle = Math.atan2(tangent.x, tangent.z);
+  bridgeCrossings.push({ x: point.x, z: point.z, angle });
   const group = new THREE.Group();
   group.position.set(point.x, terrainHeight(point.x, point.z) + 0.72, point.z);
   group.rotation.y = angle;
@@ -660,8 +659,18 @@ const player = {
     const smoothing = 1 - Math.exp(-(moving ? 12 : 8) * dt);
     this.velocityX += (targetX - this.velocityX) * smoothing;
     this.velocityZ += (targetZ - this.velocityZ) * smoothing;
-    this.x = clampNumber(this.x + this.velocityX * dt, -WORLD_HALF + 9, WORLD_HALF - 9, 0);
-    this.z = clampNumber(this.z + this.velocityZ * dt, -WORLD_HALF + 9, WORLD_HALF - 9, 0);
+    const nextX = clampNumber(this.x + this.velocityX * dt, -WORLD_HALF + 9, WORLD_HALF - 9, this.x);
+    const nextZ = clampNumber(this.z + this.velocityZ * dt, -WORLD_HALF + 9, WORLD_HALF - 9, this.z);
+    if (isWalkablePosition(nextX, nextZ, { worldHalf: WORLD_HALF, riverDistance, bridges: bridgeCrossings })) {
+      this.x = nextX;
+      this.z = nextZ;
+    } else {
+      // Slide along the riverbank instead of allowing the character to walk through water.
+      if (isWalkablePosition(nextX, this.z, { worldHalf: WORLD_HALF, riverDistance, bridges: bridgeCrossings })) this.x = nextX;
+      else this.velocityX *= 0.12;
+      if (isWalkablePosition(this.x, nextZ, { worldHalf: WORLD_HALF, riverDistance, bridges: bridgeCrossings })) this.z = nextZ;
+      else this.velocityZ *= 0.12;
+    }
 
     if (moving) {
       const targetRotation = Math.atan2(-directionX, -directionZ);
@@ -894,8 +903,16 @@ function chooseBuildItem(type) {
 function placeBuildAt(point) {
   if (!appState.buildType) return;
   const { type } = appState;
+  if (Math.abs(point.x) > WORLD_HALF - 8 || Math.abs(point.z) > WORLD_HALF - 8) {
+    showToast('اختر مكانًا داخل حدود الحديقة.');
+    return;
+  }
   if (riverDistance(point.x, point.z) < 10) {
     showToast('اترك مساحة النهر والمجرى المائي خالية.');
+    return;
+  }
+  if (placedDecorations.length >= 900) {
+    showToast('وصلت إلى الحد الأقصى لعناصر البناء المحفوظة.');
     return;
   }
   const cost = BUILD_ITEMS[type].cost;
@@ -1053,9 +1070,10 @@ function updateQualityButtons() {
     button.setAttribute('aria-pressed', button.dataset.quality === appState.requestedQuality ? 'true' : 'false');
   }
   const label = QUALITY[appState.activeQuality]?.label || 'متوسطة';
+  const details = QUALITY_DETAILS[appState.activeQuality] || QUALITY_DETAILS.medium;
   ui.qualityNote.textContent = appState.requestedQuality === 'auto'
-    ? `التلقائي يعمل حاليًا على الجودة ${label}، ويخفّضها أو يرفعها حسب سلاسة الأداء.`
-    : `الجودة المختارة: ${label}. يمكنك الرجوع إلى «تلقائي» ليتكيف العرض مع جهازك.`;
+    ? `التلقائي يعمل حاليًا على الجودة ${label}. ${details} يخفّضها أو يرفعها حسب سلاسة الأداء.`
+    : `الجودة المختارة: ${label}. ${details} يمكنك الرجوع إلى «تلقائي» ليتكيف العرض مع جهازك.`;
 }
 
 function setRequestedQuality(name) {
@@ -1182,6 +1200,10 @@ ui.canvas.addEventListener('pointerup', (event) => {
 });
 ui.canvas.addEventListener('pointercancel', () => { pointerDrag = null; });
 ui.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+ui.canvas.addEventListener('wheel', (event) => {
+  event.preventDefault();
+  cameraDistance = clampNumber(cameraDistance + Math.sign(event.deltaY) * 1.15, 7.5, 25, 12.4);
+}, { passive: false });
 
 function updateCamera(dt) {
   cameraTarget.set(player.x, terrainHeight(player.x, player.z) + 1.3, player.z);
@@ -1244,6 +1266,7 @@ window.addEventListener('blur', () => {
   for (const key of Object.keys(keys)) keys[key] = false;
   resetJoystick();
 });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { for (const key of Object.keys(keys)) keys[key] = false; resetJoystick(); } });
 
 // ----- UI events -----
 ui.settingsToggle.addEventListener('click', () => openPanel(ui.settingsBackdrop));
@@ -1320,7 +1343,7 @@ function animate() {
 }
 
 function resize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = window.innerWidth / Math.max(1, window.innerHeight);
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   const preset = QUALITY[appState.activeQuality] || QUALITY.medium;
@@ -1338,7 +1361,7 @@ setRequestedQuality(appState.requestedQuality);
 renderTasks();
 renderBuildMenu();
 updateBuildPrompt();
-window.setTimeout(() => ui.hint.classList.add('hidden'), 14000);
+window.setTimeout(() => ui.hint.classList.add('hidden'), 7500);
 renderer.setAnimationLoop(animate);
 
 // Publicly visible readiness marker for automated smoke tests; no game control API is exposed.

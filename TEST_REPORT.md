@@ -1,20 +1,25 @@
-# Test report — حديقتي
+# تقرير الاختبار — حديقتي ثلاثية الأبعاد
 
-Date: 2026-11-13
+التاريخ: 2026-11-13
 
-## Passed
+## اجتاز
 
-- `node --check src/scene.js`
-- `node --check src/save-data.js`
-- `node --check vite.config.js`
-- `npm test`: 6/6 unit tests passed.
-- HTML structure check: 22 unique IDs, one local module entry point, and no inline event handlers.
-- Client-script audit: no `eval`, `Function` constructor, `innerHTML`, or external URL imports.
-- Legacy game audit: no remaining Shadow Hunter menu, timer, city, or shadow-hunt UI/game logic strings in the new scene files.
+- `node --check` لجميع ملفات JavaScript في المشروع.
+- `npm test`: 14/14 اختبارًا ناجحًا.
+- فحص HTML: 22 معرفًا فريدًا بلا تكرار، و19 مرجع `getElementById` وكلها موجودة، ونقطة دخول واحدة نسبية `./src/scene.js`.
+- فحص عقد الواجهة: أزرار المستوى الأعلى تقتصر على البناء والمهام والإعدادات؛ خيارات الجودة الخمسة وأنواع البناء الثمانية موجودة.
+- فحص الحماية الساكن: لا توجد استعمالات `eval` أو منشئ `Function` أو `innerHTML` أو استيراد سكربتات من عناوين خارجية.
+- تحقق اختبارات الحفظ من حدود البذور والتقدم والإحداثيات، رفض أنواع البناء غير المسموحة، إسقاط المهام القديمة، وإعادة ضبط المهمة اليومية. كما اختُبرت قواعد الحركة على الأرض، وحافة العالم، وضفة النهر، واتجاه الجسر رياضيًا في اختبارات مستقلة.
 
-## Blocked by the environment
+## غير مكتمل بسبب بيئة التنفيذ
 
-- `npm ci` could not fetch the locked Vite package because DNS resolution for `registry.npmjs.org` failed (`EAI_AGAIN`).
-- Since the dependency installation did not finish, `npm run build` and a real browser/WebGL integration test could not be completed in this environment.
+- محاولة `npm ci` فشلت لأن DNS لم يتمكن من الوصول إلى `registry.npmjs.org` (`EAI_AGAIN`).
+- بالتالي لم يتوفر Vite في البيئة؛ `npm run build` لم يبدأ (`vite: not found`).
+- لم يمكن تنفيذ اختبار تشغيل متصفح فعلي أو اختبار WebGL بصري. لا أعتبر ذلك نجاحًا، ويجب تشغيل `npm ci`, `npm test`, `npm run build` ثم فحص الحركة والبناء والجودة على متصفح يدعم WebGL بعد تنزيل الاعتماديات.
 
-The source and unit tests are included. After installing dependencies in an environment with npm registry access, run `npm install`, `npm test`, and `npm run build`, then open the app with `npm run dev` for the full 3D interaction test.
+## تغييرات تم التحقق منها ساكنًا
+
+- تصحيح مسار نقطة دخول Vite إلى مسار نسبي ليعمل داخل مسار المشروع على الاستضافات الفرعية.
+- تقليص المهام إلى مهمة «سبحان الله وبحمده» فقط؛ بذور البناء مكافأة لعب رمزية لا تقديرًا للأجر الديني.
+- إضافة حواجز لحركة الشخصية عند النهر، مع السماح بعبور الجسرين، واختبارات وحدة لقواعد الحركة، وإضافة تقريب/إبعاد الكاميرا.
+- توضيح فروق مستويات الجودة، وإضافة ترويسات حماية لخادمي التطوير والمعاينة وملف `_headers` للاستضافات التي تدعمه.
